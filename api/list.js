@@ -1,11 +1,10 @@
 import { list } from '@vercel/blob';
-import { NextResponse } from 'next/server';
 
 export const config = {
   runtime: 'edge',
 };
 
-export async function GET() {
+export default async function handler(request) {
   try {
     const { blobs } = await list();
     const images = blobs
@@ -13,8 +12,13 @@ export async function GET() {
       .map(b => ({ url: b.url, name: b.pathname }))
       .reverse();
     
-    return NextResponse.json(images);
+    return new Response(JSON.stringify(images), {
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
